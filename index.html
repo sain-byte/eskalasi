@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eskalasi - Mode WA</title>
+  <title>Eskalasi - Mode Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background-color: #12181b; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; }
@@ -22,7 +22,7 @@
       <div>
         <h1 class="text-2xl font-bold text-white flex items-center gap-2">
           <span>Eskalasi</span>
-          <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full font-normal">Mode WA</span>
+          <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full font-normal">Mode Chat</span>
         </h1>
         <p class="text-xs text-gray-400 mt-1">Tempel data mentah, data shipper & buyer langsung terisi otomatis.</p>
       </div>
@@ -66,10 +66,10 @@
       </div>
     </div>
 
-    <!-- VIEW 2: MAIN DASHBOARD (USER & LEADER & ADMIN) -->
+    <!-- VIEW 2: MAIN DASHBOARD -->
     <div id="viewDashboard" class="hidden space-y-6">
 
-      <!-- TOP ADMIN PANEL (Hanya muncul jika Role == Admin) -->
+      <!-- TOP ADMIN PANEL (Hanya untuk Admin) -->
       <div id="adminPanel" class="hidden card-bg p-4 rounded-2xl border border-teal-500/30">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-sm font-bold text-teal-400 flex items-center gap-2">
@@ -96,6 +96,7 @@
               <input type="password" id="newPin" placeholder="PIN" class="input-bg px-2 py-1 rounded-lg text-xs">
               <select id="newRole" class="bg-gray-800 text-white px-2 py-1 rounded-lg text-xs">
                 <option value="User">User</option>
+                <option value="Aggregator">Aggregator</option>
                 <option value="Leader">Leader</option>
                 <option value="Admin">Admin</option>
               </select>
@@ -119,9 +120,9 @@
         <div class="flex flex-col md:flex-row justify-between items-center mt-3 gap-3">
           <span id="fieldCount" class="text-xs text-gray-500">0 field terbaca.</span>
 
-          <!-- DYNAMIC SUBMIT BUTTON -->
-          <button onclick="submitToGSheet()" id="btnSubmitGsheet" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20">
-            <span>🚀 Kirim ke GSheet (app_claim)</span>
+          <!-- DYNAMIC SUBMIT BUTTON (Hanya untuk Leader, Aggregator, Admin) -->
+          <button onclick="submitToGSheet()" id="btnSubmitGsheet" class="hidden w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20">
+            <span>🚀 Kirim ke GSheet Aggre 1</span>
           </button>
         </div>
       </div>
@@ -132,7 +133,7 @@
         <div class="card-bg p-4 rounded-2xl">
           <div class="flex justify-between items-center mb-2">
             <h2 class="font-semibold text-sm text-gray-200">Shipper</h2>
-            <button onclick="copyToClipboard('shipperText')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
+            <button onclick="copyToClipboard('shipperText', 'shipper')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
           </div>
           <textarea id="shipperText" rows="10" readonly class="w-full input-bg p-3 rounded-xl text-xs focus:outline-none"></textarea>
         </div>
@@ -141,7 +142,7 @@
         <div class="card-bg p-4 rounded-2xl">
           <div class="flex justify-between items-center mb-2">
             <h2 class="font-semibold text-sm text-gray-200">Buyer</h2>
-            <button onclick="copyToClipboard('buyerText')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
+            <button onclick="copyToClipboard('buyerText', 'buyer')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
           </div>
           <textarea id="buyerText" rows="10" readonly class="w-full input-bg p-3 rounded-xl text-xs focus:outline-none"></textarea>
         </div>
@@ -154,46 +155,40 @@
   <div id="authorModal" class="fixed inset-0 modal-blur flex items-center justify-center p-4 z-50 hidden">
     <div class="card-bg max-w-md w-full rounded-2xl p-6 border border-gray-700 shadow-2xl relative">
       
-      <!-- Modal Header -->
       <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-white text-base">Eskalasi - Mode WA</h3>
+        <h3 class="font-bold text-white text-base">Eskalasi - Mode Chat</h3>
         <button onclick="toggleAuthorModal(false)" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-lg">Tutup</button>
       </div>
 
-      <!-- Tentang Section -->
       <div class="space-y-4 text-xs text-gray-300">
         <div>
           <h4 class="font-semibold text-gray-400 mb-1">Tentang</h4>
           <p>Versi 1.2. Dibuat oleh <a href="https://instagram.com/nyetirati" target="_blank" class="text-teal-400 underline font-semibold hover:text-teal-300">@nyetirati</a>.</p>
         </div>
 
-        <!-- Cara Pakai -->
         <div>
           <h4 class="font-semibold text-gray-400 mb-1">Cara pakai</h4>
           <ol class="list-decimal list-inside space-y-1 text-gray-300">
             <li>Tekan Paste atau tempel data mentah di kotak atas.</li>
             <li>Cek hasilnya di kotak Shipper dan Buyer.</li>
-            <li>Tekan Copy, lalu tempel ke WhatsApp.</li>
+            <li>Tekan Copy, lalu tempel ke WhatsApp/Chat.</li>
           </ol>
         </div>
 
-        <!-- Catatan Update -->
         <div>
           <h4 class="font-semibold text-gray-400 mb-1">Catatan update</h4>
           <ul class="list-disc list-inside space-y-1 text-gray-400">
-            <li><strong class="text-gray-200">1.2:</strong> login nama + PIN, Copy otomatis tercatat di log.</li>
-            <li><strong class="text-gray-200">1.1:</strong> output tanpa tanda bold, menu info ditambahkan.</li>
-            <li><strong class="text-gray-200">1.0:</strong> mode WA, shipper dan buyer terisi otomatis.</li>
+            <li><strong class="text-gray-200">1.2:</strong> Role Aggregator, Tombol GSheet Aggre 1, Auto-log 'shipper'/'buyer' ke GSheet.</li>
+            <li><strong class="text-gray-200">1.1:</strong> Output tanpa tanda bold, menu info ditambahkan.</li>
+            <li><strong class="text-gray-200">1.0:</strong> Mode chat, shipper dan buyer terisi otomatis.</li>
           </ul>
         </div>
 
-        <!-- Tema -->
         <div>
           <h4 class="font-semibold text-gray-400 mb-1">Tema</h4>
           <button class="bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-xs">Tema: Otomatis</button>
         </div>
 
-        <!-- Semangat Button -->
         <div>
           <h4 class="font-semibold text-gray-400 mb-1">Semangat</h4>
           <button onclick="giveEncouragement()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-teal-400 px-4 py-2 rounded-xl text-xs font-semibold w-full flex items-center justify-center gap-2">
@@ -205,16 +200,21 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
-    // CONFIGURATION
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx1ajc0c5YrSjrA6HEee-n9dVJjTBeXVET7pdqPjwdU5hKVQpHmKgBYuA7vK108ZvER/exec";
     const APP_SECRET_KEY = "ESKALASI_SECRET_KEY_998123";
 
     let currentUser = null;
     let parsedObject = {};
 
-    // ON LOAD SESSION CHECK
+    const motivasiList = [
+      "Tetap semangat cuy, rejeki gak bakal tertukar sama paket retur! 📦✨",
+      "Semangat eskalasi hari ini! Ingat, piring kotor di rumah nunggu dicuci. 😂",
+      "Gas terus! Kerja keras hari ini demi checkout keranjang esok hari! 🛒🔥",
+      "Semangat terus cuy! Beli Kopi dulu biar gak rungkad pas nanganin paket! ☕🚀",
+      "Ingat kata motivasi hari ini: Kerja ikhlas, eskalasi tuntas, dompet tebal! 💸😎"
+    ];
+
     window.onload = () => {
       const savedUser = localStorage.getItem('eskalasi_user');
       if (savedUser) {
@@ -228,10 +228,10 @@
     }
 
     function giveEncouragement() {
-      alert('❤️ Terima kasih semangatnya! Aplikasi Eskalasi makin joss!');
+      const randomIndex = Math.floor(Math.random() * motivasiList.length);
+      alert(motivasiList[randomIndex]);
     }
 
-    // LOGIN HANDLER
     async function handleLogin() {
       const uName = document.getElementById('txtUsername').value.trim();
       const uPin = document.getElementById('txtPin').value.trim();
@@ -296,6 +296,15 @@
         } else {
           document.getElementById('adminPanel').classList.add('hidden');
         }
+
+        // Tombol Submit GSheet Aggre 1 khusus Leader, Aggregator, Admin
+        const submitBtn = document.getElementById('btnSubmitGsheet');
+        if (['Leader', 'Aggregator', 'Admin'].includes(currentUser.role)) {
+          submitBtn.classList.remove('hidden');
+        } else {
+          submitBtn.classList.add('hidden');
+        }
+
       } else {
         document.getElementById('viewLogin').classList.remove('hidden');
         document.getElementById('viewDashboard').classList.add('hidden');
@@ -304,7 +313,6 @@
       }
     }
 
-    // PARSER LOGIC DATA MENTAH
     function getValue(rawText, label) {
       const regex = new RegExp(`^${label}\\s*\\n([^\\n]+)`, 'im');
       const match = rawText.match(regex);
@@ -321,7 +329,7 @@
       if (!val) return '';
       let cleanNum = parseInt(val.replace(/[^0-9]/g, ''));
       if (isNaN(cleanNum)) return '';
-      cleanNum = Math.floor(cleanNum / 1000); // Hapus 3 nol terakhir
+      cleanNum = Math.floor(cleanNum / 1000);
       return 'Rp' + cleanNum.toLocaleString('id-ID');
     }
 
@@ -411,15 +419,33 @@ Service Type : ${parsedObject.serviceType}`;
       processParsing();
     }
 
-    function copyToClipboard(id) {
+    // COPY TO CLIPBOARD + BACKGROUND LOGGING TO GSHEET 'logs'
+    function copyToClipboard(id, type) {
       const copyText = document.getElementById(id);
       if (!copyText.value.trim()) return;
+      
       copyText.select();
       navigator.clipboard.writeText(copyText.value);
+
+      // Silent Log Fetching
+      if (currentUser && parsedObject.awb) {
+        fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'logClick',
+            appSecret: APP_SECRET_KEY,
+            username: currentUser.username,
+            role: currentUser.role,
+            aktivitas: type, // 'shipper' atau 'buyer'
+            awb: parsedObject.awb
+          })
+        }).catch(e => console.log('Log silent error:', e));
+      }
+
       alert('Teks berhasil disalin!');
     }
 
-    // SUBMIT TO GSHEET TARGET VIA GAS
+    // SUBMIT TO GSHEET AGGRE 1
     async function submitToGSheet() {
       if (!parsedObject.awb) {
         alert('Data mentah kosong atau AWB tidak terdeteksi!');
@@ -428,7 +454,7 @@ Service Type : ${parsedObject.serviceType}`;
 
       const btn = document.getElementById('btnSubmitGsheet');
       btn.disabled = true;
-      btn.innerText = '⏳ Mengirim ke GSheet Target...';
+      btn.innerText = '⏳ Mengirim ke GSheet Aggre 1...';
 
       try {
         const response = await fetch(GAS_WEB_APP_URL, {
@@ -437,13 +463,14 @@ Service Type : ${parsedObject.serviceType}`;
             action: 'submitData',
             appSecret: APP_SECRET_KEY,
             role: currentUser.role,
+            username: currentUser.username,
             data: parsedObject
           })
         });
 
         const res = await response.json();
         btn.disabled = false;
-        btn.innerText = '🚀 Kirim ke GSheet (app_claim)';
+        btn.innerText = '🚀 Kirim ke GSheet Aggre 1';
 
         if (res.success) {
           alert('✅ ' + res.message);
@@ -452,12 +479,11 @@ Service Type : ${parsedObject.serviceType}`;
         }
       } catch (err) {
         btn.disabled = false;
-        btn.innerText = '🚀 Kirim ke GSheet (app_claim)';
+        btn.innerText = '🚀 Kirim ke GSheet Aggre 1';
         alert('❌ Error: ' + err.message);
       }
     }
 
-    // ADMIN ACTIONS
     async function saveAdminConfig(key, inputId) {
       const val = document.getElementById(inputId).value.trim();
       if (!val) return alert('Isi nilai config terlebih dahulu!');
