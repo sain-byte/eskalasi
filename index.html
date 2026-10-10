@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eskalasi - Mode WA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #12181b; color: #e0e0e0; font-family: system-ui, -apple-system, sans-serif; }
+    .card-bg { background-color: #1a2327; border: 1px solid #2a373d; }
+    .input-bg { background-color: #0f1416; border: 1px solid #2a373d; color: #22c55e; font-family: monospace; }
+    .btn-teal { background-color: #2dd4bf; color: #0f172a; font-weight: 600; }
+    .btn-teal:hover { background-color: #14b8a6; }
+    .modal-blur { backdrop-filter: blur(8px); background-color: rgba(0, 0, 0, 0.75); }
+  </style>
+</head>
+<body class="p-4 md:p-6 min-h-screen">
+  <div class="max-w-6xl mx-auto">
+    
+    <!-- HEADER APP -->
+    <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+      <div>
+        <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+          <span>Eskalasi</span>
+          <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full font-normal">Mode WA</span>
+        </h1>
+        <p class="text-xs text-gray-400 mt-1">Tempel data mentah, data shipper & buyer langsung terisi otomatis.</p>
+      </div>
+
+      <!-- HEADER RIGHT INFO & AUTHOR MODAL TRIGGER -->
+      <div class="flex items-center gap-3">
+        <div id="userBadge" class="hidden text-right">
+          <div class="text-xs text-gray-400">Masuk sebagai</div>
+          <div class="text-sm font-semibold text-teal-400"><span id="lblUsername">-</span> (<span id="lblRole">-</span>)</div>
+        </div>
+        
+        <!-- Author Button Modal Trigger -->
+        <button onclick="toggleAuthorModal(true)" class="p-2 bg-gray-800 hover:bg-gray-700 rounded-xl text-xl border border-gray-700 transition" title="Tentang Aplikasi">
+          😎
+        </button>
+
+        <!-- Logout Button -->
+        <button id="btnLogout" onclick="handleLogout()" class="hidden text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/20">
+          Keluar
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: LOGIN FORM -->
+    <div id="viewLogin" class="max-w-md mx-auto card-bg p-6 rounded-2xl my-12 shadow-2xl">
+      <h2 class="text-xl font-bold text-white mb-1 text-center">Masuk ke Eskalasi</h2>
+      <p class="text-xs text-gray-400 mb-6 text-center">Masukkan Username & PIN yang terdaftar di sistem.</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-300 block mb-1">Username</label>
+          <input type="text" id="txtUsername" placeholder="Contoh: admin" class="w-full input-bg p-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-teal-500">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-300 block mb-1">PIN / Secret</label>
+          <input type="password" id="txtPin" placeholder="****" class="w-full input-bg p-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-teal-500">
+        </div>
+        <button onclick="handleLogin()" id="btnLogin" class="w-full btn-teal py-3 rounded-xl font-bold text-sm shadow-lg mt-2">
+          Masuk Sekarang
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: MAIN DASHBOARD (USER & LEADER & ADMIN) -->
+    <div id="viewDashboard" class="hidden space-y-6">
+
+      <!-- TOP ADMIN PANEL (Hanya muncul jika Role == Admin) -->
+      <div id="adminPanel" class="hidden card-bg p-4 rounded-2xl border border-teal-500/30">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-sm font-bold text-teal-400 flex items-center gap-2">
+            <span>⚙️ Admin Control Center</span>
+          </h3>
+          <span class="text-xs text-gray-400">Pengaturan Master System</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Update Target Spreadsheet ID -->
+          <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800">
+            <label class="text-xs font-semibold text-gray-300 block mb-1">Set ID GSheet Leader/Target</label>
+            <div class="flex gap-2">
+              <input type="text" id="txtConfigLeadId" placeholder="Spreadsheet ID..." class="w-full input-bg px-3 py-1.5 rounded-lg text-xs">
+              <button onclick="saveAdminConfig('ID_GSHEET_LEAD', 'txtConfigLeadId')" class="btn-teal px-3 py-1.5 rounded-lg text-xs whitespace-nowrap">Simpan</button>
+            </div>
+          </div>
+
+          <!-- Quick Add User -->
+          <div class="bg-gray-900/50 p-3 rounded-xl border border-gray-800">
+            <label class="text-xs font-semibold text-gray-300 block mb-1">Tambah Akun Baru</label>
+            <div class="grid grid-cols-3 gap-2">
+              <input type="text" id="newUname" placeholder="User" class="input-bg px-2 py-1 rounded-lg text-xs">
+              <input type="password" id="newPin" placeholder="PIN" class="input-bg px-2 py-1 rounded-lg text-xs">
+              <select id="newRole" class="bg-gray-800 text-white px-2 py-1 rounded-lg text-xs">
+                <option value="User">User</option>
+                <option value="Leader">Leader</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <button onclick="addNewUser()" class="btn-teal w-full mt-2 py-1 rounded-lg text-xs">Tambah User</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN INPUT DATA MENTAH -->
+      <div class="card-bg p-4 md:p-5 rounded-2xl">
+        <div class="flex justify-between items-center mb-2">
+          <label class="text-sm font-semibold text-gray-200">Data mentah</label>
+          <div class="space-x-2">
+            <button onclick="handlePaste()" class="btn-teal px-4 py-1.5 rounded-xl text-xs">Paste</button>
+            <button onclick="handleClear()" class="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-xl text-xs text-gray-300">Bersihkan</button>
+          </div>
+        </div>
+        <textarea id="rawInput" oninput="processParsing()" rows="8" class="w-full input-bg p-3 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-1 focus:ring-teal-500" placeholder="Awb Number&#10;11004452420281..."></textarea>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mt-3 gap-3">
+          <span id="fieldCount" class="text-xs text-gray-500">0 field terbaca.</span>
+
+          <!-- DYNAMIC SUBMIT BUTTON -->
+          <button onclick="submitToGSheet()" id="btnSubmitGsheet" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20">
+            <span>🚀 Kirim ke GSheet (app_claim)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTTOM CARDS: SHIPPER & BUYER -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Shipper Box -->
+        <div class="card-bg p-4 rounded-2xl">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="font-semibold text-sm text-gray-200">Shipper</h2>
+            <button onclick="copyToClipboard('shipperText')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
+          </div>
+          <textarea id="shipperText" rows="10" readonly class="w-full input-bg p-3 rounded-xl text-xs focus:outline-none"></textarea>
+        </div>
+
+        <!-- Buyer Box -->
+        <div class="card-bg p-4 rounded-2xl">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="font-semibold text-sm text-gray-200">Buyer</h2>
+            <button onclick="copyToClipboard('buyerText')" class="btn-teal px-3 py-1 rounded-lg text-xs">Copy</button>
+          </div>
+          <textarea id="buyerText" rows="10" readonly class="w-full input-bg p-3 rounded-xl text-xs focus:outline-none"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL POPUP AUTHOR 😎 (TENTANG APLIKASI) -->
+  <div id="authorModal" class="fixed inset-0 modal-blur flex items-center justify-center p-4 z-50 hidden">
+    <div class="card-bg max-w-md w-full rounded-2xl p-6 border border-gray-700 shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-white text-base">Eskalasi - Mode WA</h3>
+        <button onclick="toggleAuthorModal(false)" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-lg">Tutup</button>
+      </div>
+
+      <!-- Tentang Section -->
+      <div class="space-y-4 text-xs text-gray-300">
+        <div>
+          <h4 class="font-semibold text-gray-400 mb-1">Tentang</h4>
+          <p>Versi 1.2. Dibuat oleh <a href="https://instagram.com/nyetirati" target="_blank" class="text-teal-400 underline font-semibold hover:text-teal-300">@nyetirati</a>.</p>
+        </div>
+
+        <!-- Cara Pakai -->
+        <div>
+          <h4 class="font-semibold text-gray-400 mb-1">Cara pakai</h4>
+          <ol class="list-decimal list-inside space-y-1 text-gray-300">
+            <li>Tekan Paste atau tempel data mentah di kotak atas.</li>
+            <li>Cek hasilnya di kotak Shipper dan Buyer.</li>
+            <li>Tekan Copy, lalu tempel ke WhatsApp.</li>
+          </ol>
+        </div>
+
+        <!-- Catatan Update -->
+        <div>
+          <h4 class="font-semibold text-gray-400 mb-1">Catatan update</h4>
+          <ul class="list-disc list-inside space-y-1 text-gray-400">
+            <li><strong class="text-gray-200">1.2:</strong> login nama + PIN, Copy otomatis tercatat di log.</li>
+            <li><strong class="text-gray-200">1.1:</strong> output tanpa tanda bold, menu info ditambahkan.</li>
+            <li><strong class="text-gray-200">1.0:</strong> mode WA, shipper dan buyer terisi otomatis.</li>
+          </ul>
+        </div>
+
+        <!-- Tema -->
+        <div>
+          <h4 class="font-semibold text-gray-400 mb-1">Tema</h4>
+          <button class="bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-xs">Tema: Otomatis</button>
+        </div>
+
+        <!-- Semangat Button -->
+        <div>
+          <h4 class="font-semibold text-gray-400 mb-1">Semangat</h4>
+          <button onclick="giveEncouragement()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-teal-400 px-4 py-2 rounded-xl text-xs font-semibold w-full flex items-center justify-center gap-2">
+            <span>🔥 Kasih semangat</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // CONFIGURATION
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx1ajc0c5YrSjrA6HEee-n9dVJjTBeXVET7pdqPjwdU5hKVQpHmKgBYuA7vK108ZvER/exec";
+    const APP_SECRET_KEY = "ESKALASI_SECRET_KEY_998123";
+
+    let currentUser = null;
+    let parsedObject = {};
+
+    // ON LOAD SESSION CHECK
+    window.onload = () => {
+      const savedUser = localStorage.getItem('eskalasi_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        renderView();
+      }
+    };
+
+    function toggleAuthorModal(show) {
+      document.getElementById('authorModal').classList.toggle('hidden', !show);
+    }
+
+    function giveEncouragement() {
+      alert('❤️ Terima kasih semangatnya! Aplikasi Eskalasi makin joss!');
+    }
+
+    // LOGIN HANDLER
+    async function handleLogin() {
+      const uName = document.getElementById('txtUsername').value.trim();
+      const uPin = document.getElementById('txtPin').value.trim();
+
+      if (!uName || !uPin) {
+        alert('Mohon isi Username dan PIN!');
+        return;
+      }
+
+      const btn = document.getElementById('btnLogin');
+      btn.disabled = true;
+      btn.innerText = '⏳ Memeriksa Hak Akses...';
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'login',
+            appSecret: APP_SECRET_KEY,
+            username: uName,
+            pin: uPin
+          })
+        });
+
+        const res = await response.json();
+        btn.disabled = false;
+        btn.innerText = 'Masuk Sekarang';
+
+        if (res.success) {
+          currentUser = { username: res.username, role: res.role };
+          localStorage.setItem('eskalasi_user', JSON.stringify(currentUser));
+          renderView();
+        } else {
+          alert('❌ ' + res.message);
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = 'Masuk Sekarang';
+        alert('❌ Error Koneksi: ' + err.message);
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('eskalasi_user');
+      currentUser = null;
+      renderView();
+    }
+
+    function renderView() {
+      if (currentUser) {
+        document.getElementById('viewLogin').classList.add('hidden');
+        document.getElementById('viewDashboard').classList.remove('hidden');
+        document.getElementById('userBadge').classList.remove('hidden');
+        document.getElementById('btnLogout').classList.remove('hidden');
+
+        document.getElementById('lblUsername').innerText = currentUser.username;
+        document.getElementById('lblRole').innerText = currentUser.role;
+
+        // Admin Panel Toggle
+        if (currentUser.role === 'Admin') {
+          document.getElementById('adminPanel').classList.remove('hidden');
+        } else {
+          document.getElementById('adminPanel').classList.add('hidden');
+        }
+      } else {
+        document.getElementById('viewLogin').classList.remove('hidden');
+        document.getElementById('viewDashboard').classList.add('hidden');
+        document.getElementById('userBadge').classList.add('hidden');
+        document.getElementById('btnLogout').classList.add('hidden');
+      }
+    }
+
+    // PARSER LOGIC DATA MENTAH
+    function getValue(rawText, label) {
+      const regex = new RegExp(`^${label}\\s*\\n([^\\n]+)`, 'im');
+      const match = rawText.match(regex);
+      return match ? match[1].trim() : '';
+    }
+
+    function formatRupiahNoSpace(val) {
+      if (!val) return '';
+      const num = parseInt(val.replace(/[^0-9]/g, ''));
+      return isNaN(num) ? '' : 'Rp' + num.toLocaleString('id-ID');
+    }
+
+    function parseOngkirFixBug(val) {
+      if (!val) return '';
+      let cleanNum = parseInt(val.replace(/[^0-9]/g, ''));
+      if (isNaN(cleanNum)) return '';
+      cleanNum = Math.floor(cleanNum / 1000); // Hapus 3 nol terakhir
+      return 'Rp' + cleanNum.toLocaleString('id-ID');
+    }
+
+    function cleanDetailItems(val) {
+      if (!val) return '';
+      return val.replace(/^item\s*name\s*:\s*/i, '').trim();
+    }
+
+    function processParsing() {
+      const raw = document.getElementById('rawInput').value;
+      if (!raw.trim()) {
+        document.getElementById('shipperText').value = '';
+        document.getElementById('buyerText').value = '';
+        document.getElementById('fieldCount').innerText = '0 field terbaca.';
+        parsedObject = {};
+        return;
+      }
+
+      const lines = raw.split('\n').filter(l => l.trim().length > 0);
+      document.getElementById('fieldCount').innerText = `${Math.floor(lines.length / 2)} field terbaca.`;
+
+      const rawMerchantPrice = getValue(raw, 'Merchant Price');
+      const rawTotalItemPrice = getValue(raw, 'Total Item Price');
+      const rawDetailItems = getValue(raw, 'Detail Items');
+
+      parsedObject = {
+        awb: getValue(raw, 'Awb Number'),
+        bookingId: getValue(raw, 'Booking Id'),
+        useInsurance: getValue(raw, 'Use Insurance'),
+        shipperName: getValue(raw, 'Shipper Name'),
+        shipperAddress: getValue(raw, 'Shipper Address'),
+        shipperContact: getValue(raw, 'Shipper Contact'),
+        buyerName: getValue(raw, 'Buyer Name'),
+        buyerAddress: getValue(raw, 'Buyer Address'),
+        buyerContact: getValue(raw, 'Buyer Contact'),
+        detailItems: cleanDetailItems(rawDetailItems),
+        hargaBarang: formatRupiahNoSpace(rawTotalItemPrice),
+        ongkir: parseOngkirFixBug(rawMerchantPrice),
+        clientName: getValue(raw, 'Client Name'),
+        serviceType: getValue(raw, 'Service Type'),
+        sourceStaging: getValue(raw, 'Source Staging'),
+        sourceUnitzone: getValue(raw, 'Source Unitzone'),
+        destStaging: getValue(raw, 'Destination Staging'),
+        destUnitzone: getValue(raw, 'Destination Unitzone')
+      };
+
+      const shipperFormatted = 
+`Awb Number : ${parsedObject.awb}
+Shipper Name : ${parsedObject.shipperName}
+Shipper Address : ${parsedObject.shipperAddress}
+Shipper Contact : ${parsedObject.shipperContact}
+Source Staging : ${parsedObject.sourceStaging}
+Source Unitzone : ${parsedObject.sourceUnitzone}
+Detail Items : ${parsedObject.detailItems}
+Total Item Price : ${parsedObject.hargaBarang}
+Channel Name : ${parsedObject.clientName}
+Service Type : ${parsedObject.serviceType}`;
+
+      const buyerFormatted = 
+`Awb Number : ${parsedObject.awb}
+Buyer Name : ${parsedObject.buyerName}
+Buyer Address : ${parsedObject.buyerAddress}
+Buyer Contact : ${parsedObject.buyerContact}
+Destination Staging : ${parsedObject.destStaging}
+Destination Unitzone : ${parsedObject.destUnitzone}
+Detail Items : ${parsedObject.detailItems}
+Total Item Price : ${parsedObject.hargaBarang}
+Channel Name : ${parsedObject.clientName}
+Service Type : ${parsedObject.serviceType}`;
+
+      document.getElementById('shipperText').value = shipperFormatted;
+      document.getElementById('buyerText').value = buyerFormatted;
+    }
+
+    async function handlePaste() {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('rawInput').value = text;
+        processParsing();
+      } catch (err) {
+        alert('Gagal paste otomatis. Silakan paste manual (Ctrl+V)');
+      }
+    }
+
+    function handleClear() {
+      document.getElementById('rawInput').value = '';
+      processParsing();
+    }
+
+    function copyToClipboard(id) {
+      const copyText = document.getElementById(id);
+      if (!copyText.value.trim()) return;
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value);
+      alert('Teks berhasil disalin!');
+    }
+
+    // SUBMIT TO GSHEET TARGET VIA GAS
+    async function submitToGSheet() {
+      if (!parsedObject.awb) {
+        alert('Data mentah kosong atau AWB tidak terdeteksi!');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitGsheet');
+      btn.disabled = true;
+      btn.innerText = '⏳ Mengirim ke GSheet Target...';
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'submitData',
+            appSecret: APP_SECRET_KEY,
+            role: currentUser.role,
+            data: parsedObject
+          })
+        });
+
+        const res = await response.json();
+        btn.disabled = false;
+        btn.innerText = '🚀 Kirim ke GSheet (app_claim)';
+
+        if (res.success) {
+          alert('✅ ' + res.message);
+        } else {
+          alert('❌ Gagal: ' + res.message);
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = '🚀 Kirim ke GSheet (app_claim)';
+        alert('❌ Error: ' + err.message);
+      }
+    }
+
+    // ADMIN ACTIONS
+    async function saveAdminConfig(key, inputId) {
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) return alert('Isi nilai config terlebih dahulu!');
+
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateConfig',
+          appSecret: APP_SECRET_KEY,
+          key: key,
+          value: val
+        })
+      });
+      const res = await response.json();
+      alert(res.message);
+    }
+
+    async function addNewUser() {
+      const u = document.getElementById('newUname').value.trim();
+      const p = document.getElementById('newPin').value.trim();
+      const r = document.getElementById('newRole').value;
+
+      if (!u || !p) return alert('Username dan PIN wajib diisi!');
+
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'addUser',
+          appSecret: APP_SECRET_KEY,
+          userData: { username: u, pin: p, role: r, status: 'Active' }
+        })
+      });
+      const res = await response.json();
+      alert(res.message);
+      document.getElementById('newUname').value = '';
+      document.getElementById('newPin').value = '';
+    }
+  </script>
+</body>
+</html>
